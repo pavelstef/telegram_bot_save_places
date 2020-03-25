@@ -41,25 +41,18 @@ class TelegramBot:
         LOGGER.debug(msg=f'Main menu. UserID: {message.chat.id} - main menu')
         keyboard = tb.types.InlineKeyboardMarkup(row_width=1)
         keyboard.add(
-            tb.types.InlineKeyboardButton(
-                text='Add new place',
-                callback_data='add_place'),
-            tb.types.InlineKeyboardButton(
-                text='Get list of your 10 last places',
-                callback_data='get_places'),
-            tb.types.InlineKeyboardButton(
-                text='Get your places near your current location',
-                callback_data='get_places_location'),
-            tb.types.InlineKeyboardButton(
-                text='Delete all your places',
-                callback_data='delete_places'),
-            tb.types.InlineKeyboardButton(
-                text='Help',
-                callback_data='help'))
+            tb.types.InlineKeyboardButton(text='Add new place', callback_data='add_place'),
+            tb.types.InlineKeyboardButton(text='Get list of your 10 last places',
+                                          callback_data='get_places'),
+            tb.types.InlineKeyboardButton(text='Get your places near your current location',
+                                          callback_data='get_places_location'),
+            tb.types.InlineKeyboardButton(text='Delete all your places', callback_data='delete_places'),
+            tb.types.InlineKeyboardButton(text='Help', callback_data='help'))
         self._bot.send_message(
             chat_id=message.chat.id,
             text='What do you want to do?',
-            reply_markup=keyboard)
+            reply_markup=keyboard
+        )
 
     def _help_massage(self, message) -> None:
         LOGGER.debug(msg=f'UserID: {message.chat.id} - help message')
@@ -77,8 +70,7 @@ I can:
         LOGGER.debug(msg=f'UserID: {message.chat.id} - Send places')
         try:
             if places:
-                self._bot.send_message(
-                    chat_id=message.chat.id, text='Your places:')
+                self._bot.send_message(chat_id=message.chat.id, text='Your places:')
                 for num, place in enumerate(places):
                     if place['photo'] is not None:
                         self._bot.send_photo(
@@ -87,21 +79,23 @@ I can:
                             caption=f"#{num + 1} - {place['description']}"
                         )
                         self._bot.send_location(
-                            message.chat.id, place['lat'], place['long'])
+                            message.chat.id, place['lat'], place['long']
+                        )
                     else:
                         self._bot.send_message(
                             chat_id=message.chat.id,
-                            text=f"#{num + 1} - {place['description']}")
+                            text=f"#{num + 1} - {place['description']}"
+                        )
                         self._bot.send_location(
-                            message.chat.id, place['lat'], place['long'])
+                            message.chat.id, place['lat'], place['long']
+                        )
             else:
                 self._bot.send_message(
-                    chat_id=message.chat.id,
-                    text='Your places were not found.')
+                    chat_id=message.chat.id, text='Your places were not found.'
+                )
             self._main_menu(message)
         except tb.apihelper.ApiException as err:
-            LOGGER.error(
-                msg=f'UserID: {message.chat.id}. API Exception: {err}')
+            LOGGER.error(msg=f'UserID: {message.chat.id}. API Exception: {err}')
             self._main_menu(message)
 
     def _list_last_places(self, message) -> None:
@@ -136,7 +130,8 @@ I can:
         self._db.delete_places(user_id=message.chat.id)
         self._bot.send_message(
             chat_id=message.chat.id,
-            text='All your places have been deleted!')
+            text='All your places have been deleted!'
+        )
         self._main_menu(message)
 
     def _add_new_place_start(self, message) -> None:
@@ -163,18 +158,15 @@ In order to add a new place you need to add the following parameters:
         )
         if 'lat' in self._place_content_dict[message.chat.id].keys(
         ) and 'description' in self._place_content_dict[message.chat.id].keys():
-            keyboard.add(
-                tb.types.InlineKeyboardButton(
-                    text='Save',
-                    callback_data='save'))
+            keyboard.add(tb.types.InlineKeyboardButton(text='Save', callback_data='save'))
         self._bot.send_message(
             chat_id=message.chat.id,
             text='Please, choose action.',
-            reply_markup=keyboard)
+            reply_markup=keyboard
+        )
 
     def _add_new_place_location(self, message) -> None:
-        LOGGER.debug(
-            msg=f'UserID: {message.chat.id} - adding new place location')
+        LOGGER.debug(msg=f'UserID: {message.chat.id} - adding new place location')
         self._place_content_dict[message.chat.id].update({
             'lat': message.location.latitude,
             'long': message.location.longitude
@@ -185,14 +177,14 @@ In order to add a new place you need to add the following parameters:
         self._add_new_place_menu(message)
 
     def _add_new_place_description(self, message) -> None:
-        LOGGER.debug(
-            msg=f'UserID: {message.chat.id} - adding new place description')
+        LOGGER.debug(msg=f'UserID: {message.chat.id} - adding new place description')
         self._place_content_dict[message.chat.id].update({
             'description': f"'{message.text[:250]}'"
         })
         self._bot.send_message(
             chat_id=message.chat.id,
-            text='Description received.')
+            text='Description received.'
+        )
         self._add_new_place_menu(message)
 
     def _add_new_place_photo(self, message) -> None:
@@ -203,8 +195,7 @@ In order to add a new place you need to add the following parameters:
         photo_info = self._bot.get_file(photo_id_small)
         photo_binary = self._bot.download_file(photo_info.file_path)
 
-        self._place_content_dict[message.chat.id].update(
-            {'photo': photo_binary})
+        self._place_content_dict[message.chat.id].update({'photo': photo_binary})
         self._bot.send_message(chat_id=message.chat.id, text='Photo received.')
         self._add_new_place_menu(message)
 
@@ -216,7 +207,8 @@ In order to add a new place you need to add the following parameters:
         )
         self._bot.send_message(
             chat_id=message.chat.id,
-            text='Your place has been saved!')
+            text='Your place has been saved!'
+        )
         self._place_content_dict.pop(message.chat.id)
         self._user_in_progress_set.remove(message.chat.id)
         self._main_menu(message)
@@ -225,16 +217,14 @@ In order to add a new place you need to add the following parameters:
         LOGGER.warning(msg=f'UserID: {message.chat.id} - admin menu')
         keyboard = tb.types.InlineKeyboardMarkup(row_width=2)
         keyboard.add(
-            tb.types.InlineKeyboardButton(
-                text='Get logs',
-                callback_data='logs'),
-            tb.types.InlineKeyboardButton(
-                text='Exit',
-                callback_data='exit'))
+            tb.types.InlineKeyboardButton(text='Get logs', callback_data='logs'),
+            tb.types.InlineKeyboardButton(text='Exit', callback_data='exit')
+        )
         self._bot.send_message(
             chat_id=message.chat.id,
             text='Admin action.',
-            reply_markup=keyboard)
+            reply_markup=keyboard
+        )
 
     def _admin_get_logs(self, message):
         with ZipFile('logs.zip', 'w') as zip_file:
@@ -286,26 +276,27 @@ In order to add a new place you need to add the following parameters:
                         user_in_set(callback_query.message.chat.id, self._user_in_progress_set):
                     self._bot.send_message(
                         chat_id=callback_query.message.chat.id,
-                        text='Please, send place location.')
+                        text='Please, send place location.'
+                    )
                 elif text_answer == 'description' and \
                         user_in_set(callback_query.message.chat.id, self._user_in_progress_set):
                     self._bot.send_message(
                         chat_id=callback_query.message.chat.id,
-                        text='Please, send place description (less than 250 symbols).')
+                        text='Please, send place description (less than 250 symbols).'
+                    )
                 elif text_answer == 'photo' and \
                         user_in_set(callback_query.message.chat.id, self._user_in_progress_set):
                     self._bot.send_message(
                         chat_id=callback_query.message.chat.id,
-                        text='Please, send place photo.')
+                        text='Please, send place photo.'
+                    )
                 elif text_answer == 'save' and \
                         user_in_set(callback_query.message.chat.id, self._user_in_progress_set):
                     self._add_new_place_save(callback_query.message)
                 elif text_answer == 'cancel' and \
                         user_in_set(callback_query.message.chat.id, self._user_in_progress_set):
-                    self._place_content_dict.pop(
-                        callback_query.message.chat.id)
-                    self._user_in_progress_set.remove(
-                        callback_query.message.chat.id)
+                    self._place_content_dict.pop(callback_query.message.chat.id)
+                    self._user_in_progress_set.remove(callback_query.message.chat.id)
                     self._main_menu(callback_query.message)
 
             elif text_question == 'Admin action.':
@@ -335,32 +326,28 @@ In order to add a new place you need to add the following parameters:
             func=lambda message: user_in_set(message.chat.id, self._user_in_progress_set),
             content_types=['location'])
         def call_add_place_location(message) -> None:
-            LOGGER.debug(
-                msg=f'UserID: {message.chat.id} - text: {message.text}')
+            LOGGER.debug(msg=f'UserID: {message.chat.id} - text: {message.text}')
             self._add_new_place_location(message)
 
         @self._bot.message_handler(
             func=lambda message: user_in_set(message.chat.id, self._user_in_progress_set),
             content_types=['text'])
         def call_add_place_description(message) -> None:
-            LOGGER.debug(
-                msg=f'UserID: {message.chat.id} - text: {message.text}')
+            LOGGER.debug(msg=f'UserID: {message.chat.id} - text: {message.text}')
             self._add_new_place_description(message)
 
         @self._bot.message_handler(
             func=lambda message: user_in_set(message.chat.id, self._user_in_progress_set),
             content_types=['photo'])
         def call_add_place_photo(message) -> None:
-            LOGGER.debug(
-                msg=f'UserID: {message.chat.id} - text: {message.text}')
+            LOGGER.debug(msg=f'UserID: {message.chat.id} - text: {message.text}')
             self._add_new_place_photo(message)
 
         @self._bot.message_handler(
             func=lambda message: user_in_set(message.chat.id, self._admin_set),
             content_types=['text'])
         def check_admin_pin(message) -> None:
-            LOGGER.debug(
-                msg=f'UserID: {message.chat.id} - text: {message.text}')
+            LOGGER.debug(msg=f'UserID: {message.chat.id} - text: {message.text}')
             if message.text == self.__adm_pin:
                 self._admin_menu(message)
             else:
@@ -371,17 +358,16 @@ In order to add a new place you need to add the following parameters:
 
         @self._bot.message_handler(content_types=['location'])
         def call_location_method(message) -> None:
-            LOGGER.debug(
-                msg=f'UserID: {message.chat.id} - text: {message.text}')
+            LOGGER.debug(msg=f'UserID: {message.chat.id} - text: {message.text}')
             self._bot.send_message(
                 chat_id=message.chat.id,
-                text='Location received.')
+                text='Location received.'
+            )
             self._places_near_location(message)
 
         @self._bot.message_handler()
         def any_massage(message) -> None:
-            LOGGER.debug(
-                msg=f'UserID: {message.chat.id} - text: {message.text}')
+            LOGGER.debug(msg=f'UserID: {message.chat.id} - text: {message.text}')
             self._main_menu(message)
 
         try:
