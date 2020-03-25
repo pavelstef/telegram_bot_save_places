@@ -1,0 +1,7 @@
+{
+  "TOKEN": "-- your token --",
+  "PROXY_TYPE": "https",
+  "PROXY_URL": "socks5://127.0.0.1:9150",
+  "DATABASE_URL": "-- your url --",
+  "ADMIN_PIN": "0000"
+}
